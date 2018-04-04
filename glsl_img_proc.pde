@@ -12,6 +12,8 @@ Capture cam;
 String[] cameraList;
 String[] shaderList;
 
+boolean recording = false;
+
 void setup() {
   size(640, 480, P2D);
   
@@ -20,7 +22,7 @@ void setup() {
   // カメラのリストを初期化
   cameraDropdown = cp5.addDropdownList("camera list");
   cameraDropdown.setPosition(0, 0);
-  cameraDropdown.setSize(256, 180);
+  cameraDropdown.setSize(width / 2, 128);
   cameraDropdown.setItemHeight(32);
   cameraDropdown.setBarHeight(32);
   
@@ -31,8 +33,8 @@ void setup() {
   
   // シェーダのリストを初期化
   shaderDropdown = cp5.addDropdownList("shader list");
-  shaderDropdown.setPosition(256, 0);
-  shaderDropdown.setSize(256, 180);
+  shaderDropdown.setPosition(width / 2, 0);
+  shaderDropdown.setSize(width / 2, 128);
   shaderDropdown.setItemHeight(32);
   shaderDropdown.setBarHeight(32);
   
@@ -52,6 +54,9 @@ void draw() {
   
   sh.set("u_time", millis() / 1000.0);
   sh.set("u_resolution", (float)width, (float)height);
+  sh.set("u_rand", random(1.0));
+  sh.set("u_noise", noise(millis()));
+  sh.set("u_mouse", mouseX, mouseY);
   
   if (cam.available()) {
     cam.read();
@@ -60,6 +65,10 @@ void draw() {
   shader(sh);
   image(cam, 0, 0, width, height);
   resetShader();
+  
+  if (recording) {
+    saveFrame();
+  }
 }
 
 void drawBackground() {
@@ -84,5 +93,12 @@ void controlEvent(ControlEvent e) {
   } else if (e.getController() == shaderDropdown) {
     int idx = (int)e.getController().getValue();
     sh = loadShader(shaderList[idx]);
+  }
+}
+
+void keyPressed() {
+  if (key == 's') {
+    recording = !recording;
+    println("recording : " + recording);
   }
 }
